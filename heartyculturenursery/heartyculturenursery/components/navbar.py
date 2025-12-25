@@ -5,7 +5,7 @@ from heartyculturenursery.components.account_dropdown import account_dropdown
 # Category data for dropdowns
 PLANT_CATEGORIES = [
     ("Flowering Shrubs", "flower-2", "/plants/flowering-shrubs"),
-    ("Draceana Varieties", "palmtree", "/plants/draceana-varieties"),
+    ("Draceana Varieties", "palm-tree", "/plants/draceana-varieties"),
     ("Cordyline Varieties", "leaf", "/plants/cordyline-varieties"),
     ("Philodendron Varieties", "heart", "/plants/philodendron-varieties"),
     ("Water Lilies & Lotus", "droplets", "/plants/water-lilies-lotus"),
@@ -17,7 +17,7 @@ PLANT_CATEGORIES = [
     ("Ginger Varieties", "sparkles", "/plants/ginger-varieties"),
     ("Calathea Varieties", "paintbrush", "/plants/calathea-varieties"),
     ("Ornamental Musa", "banana", "/plants/ornamental-musa"),
-    ("Palm Varieties", "palmtree", "/plants/palm-varieties"),
+    ("Palm Varieties", "palm-tree", "/plants/palm-varieties"),
     ("Herbal & Medicinal", "pill", "/plants/herbal-medicinal"),
     ("Sacred Trees", "tree-deciduous", "/plants/sacred-trees"),
     ("Tree Species", "trees", "/plants/tree-species"),
@@ -73,13 +73,21 @@ def navbar_menu_item(name: str, icon: str, href: str) -> rx.Component:
     )
 
 
-def navbar_dropdown(title: str, icon: str, items: list, main_href: str = "#") -> rx.Component:
+def navbar_dropdown(
+    title: str, icon: str, items: list, main_href: str = "#"
+) -> rx.Component:
     """Dropdown menu for navbar."""
     return rx.menu.root(
         rx.menu.trigger(
             rx.hstack(
                 rx.icon(icon, size=18, color="#4ade80"),
-                rx.text(title, font_size="1em", font_weight="500", color="white", letter_spacing="0.02em"),
+                rx.text(
+                    title,
+                    font_size="1em",
+                    font_weight="500",
+                    color="white",
+                    letter_spacing="0.02em",
+                ),
                 rx.icon("chevron-down", size=14, color="rgba(255,255,255,0.7)"),
                 spacing="2",
                 align_items="center",
@@ -121,7 +129,6 @@ def navbar() -> rx.Component:
                 _hover={"border": "1px solid white", "border_radius": "2px"},
                 on_click=rx.redirect("/"),
             ),
-            
             # Search Bar
             rx.hstack(
                 rx.select(
@@ -143,7 +150,7 @@ def navbar() -> rx.Component:
                 ),
                 rx.button(
                     rx.icon("search", color="black", size=20),
-                    background_color="#febd69", # Amazon Search Orange
+                    background_color="#febd69",  # Amazon Search Orange
                     height="40px",
                     width="45px",
                     border_radius="0 4px 4px 0",
@@ -157,12 +164,8 @@ def navbar() -> rx.Component:
                 overflow="hidden",
                 _focus_within={"box_shadow": "0 0 0 2px #f90", "border_radius": "4px"},
             ),
-            
-            
             # Account & Lists
             account_dropdown(),
-            
-            
             # Cart
             rx.hstack(
                 rx.box(
@@ -171,7 +174,7 @@ def navbar() -> rx.Component:
                         PlantCartState.total_items > 0,
                         rx.text(
                             PlantCartState.total_items,
-                            color="#f08804", # Amazon Orange Text
+                            color="#f08804",  # Amazon Orange Text
                             font_size="1em",
                             font_weight="bold",
                             position="absolute",
@@ -187,7 +190,13 @@ def navbar() -> rx.Component:
                     display="flex",
                     justify_content="center",
                 ),
-                rx.text("Cart", font_weight="bold", color="white", font_size="0.9em", margin_top="10px"),
+                rx.text(
+                    "Cart",
+                    font_weight="bold",
+                    color="white",
+                    font_size="0.9em",
+                    margin_top="10px",
+                ),
                 align_items="end",
                 spacing="1",
                 padding="0.5em",
@@ -195,19 +204,23 @@ def navbar() -> rx.Component:
                 _hover={"border": "1px solid white", "border_radius": "2px"},
                 on_click=PlantCartState.toggle_cart,
             ),
-            
             width="100%",
-            background_color="#1a472a", # Dark Forest Green
+            background_color="#1a472a",  # Dark Forest Green
             padding="0.5em 1em",
             align_items="center",
             height="60px",
         ),
-        
         # Sub-Navigation Bar
         rx.hstack(
             rx.hstack(
                 rx.icon("menu", size=18, color="white"),
-                rx.text("All", font_weight="600", color="white", font_size="1em", letter_spacing="0.02em"),
+                rx.text(
+                    "All",
+                    font_weight="600",
+                    color="white",
+                    font_size="1em",
+                    letter_spacing="0.02em",
+                ),
                 align_items="center",
                 spacing="2",
                 padding="0.6em 1em",
@@ -216,18 +229,40 @@ def navbar() -> rx.Component:
                 _hover={"background": "rgba(255,255,255,0.1)"},
                 on_click=MenuState.toggle_menu,
             ),
-            rx.text("Buy Again", color="white", font_size="1em", font_weight="500", padding="0.6em 1em", cursor="pointer", border_radius="4px", _hover={"background": "rgba(255,255,255,0.1)"}),
-            rx.text("Browsing History", color="white", font_size="1em", font_weight="500", padding="0.6em 1em", cursor="pointer", border_radius="4px", _hover={"background": "rgba(255,255,255,0.1)"}),
-            
+            rx.text(
+                "Buy Again",
+                color="white",
+                font_size="1em",
+                font_weight="500",
+                padding="0.6em 1em",
+                cursor="pointer",
+                border_radius="4px",
+                _hover={"background": "rgba(255,255,255,0.1)"},
+            ),
+            rx.text(
+                "Browsing History",
+                color="white",
+                font_size="1em",
+                font_weight="500",
+                padding="0.6em 1em",
+                cursor="pointer",
+                border_radius="4px",
+                _hover={"background": "rgba(255,255,255,0.1)"},
+            ),
             # Main navigation dropdowns
             navbar_dropdown("Plants", "leaf", PLANT_CATEGORIES, "/plants"),
             navbar_dropdown("Seeds", "sprout", SEED_CATEGORIES),
             navbar_dropdown("Plant Care", "heart-handshake", PLANT_CARE_CATEGORIES),
-            
             rx.link(
                 rx.hstack(
                     rx.icon("notebook-pen", size=18, color="#4ade80"),
-                    rx.text("Blog", font_size="1em", font_weight="500", color="white", letter_spacing="0.02em"),
+                    rx.text(
+                        "Blog",
+                        font_size="1em",
+                        font_weight="500",
+                        color="white",
+                        letter_spacing="0.02em",
+                    ),
                     spacing="2",
                     align_items="center",
                 ),
@@ -240,7 +275,13 @@ def navbar() -> rx.Component:
             rx.link(
                 rx.hstack(
                     rx.icon("info", size=18, color="#4ade80"),
-                    rx.text("Our Story", font_size="1em", font_weight="500", color="white", letter_spacing="0.02em"),
+                    rx.text(
+                        "Our Story",
+                        font_size="1em",
+                        font_weight="500",
+                        color="white",
+                        letter_spacing="0.02em",
+                    ),
                     spacing="2",
                     align_items="center",
                 ),
@@ -253,7 +294,13 @@ def navbar() -> rx.Component:
             rx.link(
                 rx.hstack(
                     rx.icon("book-open", size=18, color="#4ade80"),
-                    rx.text("eBooks", font_size="1em", font_weight="500", color="white", letter_spacing="0.02em"),
+                    rx.text(
+                        "eBooks",
+                        font_size="1em",
+                        font_weight="500",
+                        color="white",
+                        letter_spacing="0.02em",
+                    ),
                     spacing="2",
                     align_items="center",
                 ),
@@ -263,9 +310,7 @@ def navbar() -> rx.Component:
                 border_radius="4px",
                 _hover={"background": "rgba(255,255,255,0.1)"},
             ),
-            
             rx.spacer(),
-            
             width="100%",
             background_color="#2d5a3d",
             padding="0.4em 1.5em",
@@ -273,11 +318,9 @@ def navbar() -> rx.Component:
             height="48px",
             gap="0.5em",
         ),
-        
         width="100%",
         spacing="0",
         position="sticky",
         top="0",
         z_index="100",
     )
-

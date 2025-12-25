@@ -5,6 +5,7 @@
  */
 
 (function () {
+    console.log("!!! init_chat.js - STARTING !!!");
     console.log("init_chat.js - Establishing bridges...");
 
     window.app_state = window.app_state || {};

@@ -26,6 +26,9 @@ class State(rx.State):
 def index() -> rx.Component:
     # Welcome Page (Index)
     return rx.box(
+        # CONSOLIDATED AI LOADING (v120)
+        rx.script(src="/init_chat.js?v=120"),
+        rx.script(src="/gemma_handler.js?v=120", type="module"),
         # Main Content Wrapper (shifts when cart is open)
         rx.box(
             navbar(),
@@ -44,33 +47,6 @@ def index() -> rx.Component:
         plant_cart_drawer(),
         menu_drawer(),
         chat_whisperer(),
-        # Early-bind bridge for Gemma Chat
-        rx.script(
-            """
-            window.askGemma = function(message, onUpdate, onComplete) {
-                console.log("askGemma (bridge) called:", message);
-                if (window.__real_askGemma) {
-                    return window.__real_askGemma(message, onUpdate, onComplete);
-                } else {
-                    console.log("Gemma is still loading, will retry in 1s...");
-                    if (window.onGemmaProgress) window.onGemmaProgress("Initializing AI engine...");
-                    setTimeout(() => window.askGemma(message, onUpdate, onComplete), 1000);
-                }
-            };
-        """
-        ),
-        # Bridge WebLLM JS to Reflex Events
-        rx.script(src="/script_bridge.js?v=3"),
-        rx.script(src="/webllm_handler.js?v=3", type="module"),
-        # Explicitly define app_state for the bridge if not already present
-        rx.script(
-            """
-            if (!window.app_state) {
-                window.app_state = {};
-                console.log("Created window.app_state placeholder");
-            }
-        """
-        ),
         width="100%",
         on_mount=PlantCartState.on_load,
     )

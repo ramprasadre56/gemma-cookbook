@@ -872,6 +872,12 @@ class ChatState(rx.State):
     input_text: str = ""
     is_loading: bool = False
     loading_progress: str = ""
+    loading_percent: int = 0
+    examples: List[str] = [
+        "How do I care for my snake plant?",
+        "What are some low-light indoor plants?",
+        "How often should I water my cactus?",
+    ]
 
     # Model loading state
     model_loaded: bool = False
@@ -879,6 +885,11 @@ class ChatState(rx.State):
 
     def toggle_chat(self):
         self.is_open = not self.is_open
+
+    def open_chat(self):
+        self.is_open = True
+        if not self.model_loaded and not self.model_loading:
+            return self.load_gemma()
 
     def set_input_text(self, text: str):
         self.input_text = text
@@ -900,7 +911,22 @@ class ChatState(rx.State):
         self.loading_progress = "Initializing..."
         print("ChatState.load_gemma called - triggering JS model load")
         return rx.call_script(
-            "console.log('Loading Gemma model...'); window.loadGemma();"
+            """
+            (function callLoad() {
+                // EXPLICITLY REGISTER STATE FOR BRIDGE
+                window.app_state = window.app_state || {};
+                window.app_state.chat_state = state;
+                console.log('State registered with bridge:', state);
+
+                if (window.startGemmaModel) {
+                    console.log('Loading Gemma model...');
+                    window.startGemmaModel();
+                } else {
+                    console.log('Waiting for bridge to establish...');
+                    setTimeout(callLoad, 500);
+                }
+            })();
+            """
         )
 
     def handle_submit(self):
@@ -928,7 +954,8 @@ class ChatState(rx.State):
         if not self.messages or self.messages[-1]["role"] != "assistant":
             self.messages.append({"role": "assistant", "content": partial_response})
         else:
-            self.messages[-1]["content"] = partial_response
+            self.messages[-1]["content"] += partial_response
+        self.is_loading = False  # Stop the "thinking" indicator during stream
 
     @rx.event
     def on_gemma_complete(self, full_response: str):
@@ -940,7 +967,23 @@ class ChatState(rx.State):
 
     @rx.event
     def on_gemma_progress(self, progress: str):
+        # print(f"ChatState.on_gemma_progress: {progress}")  # Debug log
         self.loading_progress = progress
+        # Extract percentage if available
+        if "%" in progress:
+            try:
+                # Format: "Downloading: 100%" or "GPU Shaders (90%)"
+                import re
+
+                matches = re.findall(r"(\d+)%", progress)
+                if matches:
+                    self.loading_percent = int(matches[0])
+            except:
+                pass
+
+        # Fallback: if progress is "Ready!", ensure load state finishes
+        if progress == "Ready!":
+            self.on_gemma_loaded()
 
     @rx.event
     def on_gemma_loaded(self):
@@ -949,3 +992,4 @@ class ChatState(rx.State):
         self.model_loaded = True
         self.model_loading = False
         self.loading_progress = "Ready!"
+        self.loading_percent = 100

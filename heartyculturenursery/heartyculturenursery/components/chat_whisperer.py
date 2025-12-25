@@ -28,32 +28,6 @@ def message_bubble(message: dict) -> rx.Component:
 def chat_whisperer() -> rx.Component:
     """The floating chatbot component."""
     return rx.box(
-        # Chat Toggle Button
-        rx.button(
-            rx.cond(
-                ChatState.is_open,
-                rx.text("X"),
-                rx.text("Chat"),
-            ),
-            on_click=ChatState.toggle_chat,
-            position="fixed",
-            bottom="24px",
-            right="24px",
-            width="60px",
-            height="60px",
-            border_radius="30px",
-            background="linear-gradient(135deg, #22c55e, #16a34a)",
-            color="white",
-            box_shadow="0 4px 15px rgba(34, 197, 94, 0.4)",
-            cursor="pointer",
-            z_index="1000",
-            _hover={
-                "transform": "scale(1.05)",
-                "box_shadow": "0 6px 20px rgba(34, 197, 94, 0.5)",
-            },
-            transition="all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-        ),
-        # Chat Window
         rx.box(
             rx.vstack(
                 # Header
@@ -84,39 +58,65 @@ def chat_whisperer() -> rx.Component:
                         spacing="0",
                     ),
                     rx.spacer(),
-                    rx.text(
-                        "Clear",
-                        color="white",
-                        cursor="pointer",
-                        on_click=ChatState.clear_chat,
-                        _hover={"opacity": "0.7"},
+                    rx.hstack(
+                        rx.text(
+                            "Clear",
+                            color="white",
+                            cursor="pointer",
+                            on_click=ChatState.clear_chat,
+                            _hover={"opacity": "0.7"},
+                            font_size="0.9em",
+                        ),
+                        rx.box(
+                            width="1px",
+                            height="15px",
+                            background="rgba(255,255,255,0.3)",
+                        ),
+                        rx.icon(
+                            "x",
+                            color="white",
+                            size=20,
+                            cursor="pointer",
+                            on_click=ChatState.toggle_chat,
+                            _hover={"transform": "rotate(90deg)", "color": "#ff4d4d"},
+                            transition="all 0.2s ease",
+                        ),
+                        spacing="3",
+                        align="center",
                     ),
                     width="100%",
                     padding="16px",
-                    background="linear-gradient(135deg, #22c55e, #16a34a)",
+                    background="linear-gradient(135deg, #1a73e8, #0b57d0)",
                     border_radius="12px 12px 0 0",
                 ),
-                # Progress Bar (Model Loading)
+                # Status Display and Progress Bar
                 rx.cond(
-                    ChatState.loading_progress != "",
-                    rx.box(
+                    ChatState.model_loading,
+                    rx.vstack(
                         rx.text(
                             ChatState.loading_progress,
-                            font_size="0.7em",
-                            color="#666",
-                            text_align="center",
+                            font_size="0.8em",
+                            color="#333",
+                            font_weight="500",
                         ),
                         rx.box(
-                            rx.box(width="40%", height="100%", background="#22c55e"),
-                            width="100%",
-                            height="4px",
-                            background="#eee",
-                            border_radius="2px",
+                            rx.box(
+                                width=f"{ChatState.loading_percent}%",
+                                height="100%",
+                                background="#22c55e",
+                                transition="width 0.4s linear",
+                            ),
+                            width="90%",
+                            height="8px",
+                            background="#e2e8f0",
+                            border_radius="4px",
                             overflow="hidden",
+                            margin_top="4px",
                         ),
-                        padding="8px 16px",
                         width="100%",
-                        background="#f9fafb",
+                        padding="10px",
+                        align="center",
+                        spacing="0",
                     ),
                     rx.fragment(),  # Empty placeholder for false branch
                 ),
@@ -141,6 +141,46 @@ def chat_whisperer() -> rx.Component:
                         padding="16px",
                         width="100%",
                         align_items="stretch",
+                    ),
+                    rx.cond(
+                        (ChatState.messages.length == 1)
+                        & (~ChatState.is_loading)
+                        & (ChatState.model_loaded),
+                        rx.vstack(
+                            rx.text(
+                                "Try asking:",
+                                font_size="0.8em",
+                                color="#666",
+                                margin_bottom="8px",
+                            ),
+                            rx.foreach(
+                                ChatState.examples,
+                                lambda ex: rx.button(
+                                    ex,
+                                    on_click=lambda: [
+                                        ChatState.set_input_text(ex),
+                                        ChatState.handle_submit(),
+                                    ],
+                                    variant="outline",
+                                    size="1",
+                                    width="100%",
+                                    justify_content="start",
+                                    text_align="left",
+                                    white_space="normal",
+                                    height="auto",
+                                    padding="8px",
+                                    border_radius="8px",
+                                    _hover={
+                                        "background": "#f0f4f9",
+                                        "border_color": "#0b57d0",
+                                    },
+                                ),
+                            ),
+                            padding="0 16px 16px 16px",
+                            spacing="2",
+                            width="100%",
+                        ),
+                        rx.fragment(),
                     ),
                     height="350px",
                     width="100%",
@@ -216,7 +256,7 @@ def chat_whisperer() -> rx.Component:
                             rx.button(
                                 "🤖 Load Gemma AI",
                                 on_click=ChatState.load_gemma,
-                                background="linear-gradient(135deg, #22c55e, #16a34a)",
+                                background="linear-gradient(135deg, #1a73e8, #0b57d0)",
                                 color="white",
                                 width="100%",
                                 padding="12px 16px",
@@ -225,7 +265,7 @@ def chat_whisperer() -> rx.Component:
                                 cursor="pointer",
                                 _hover={
                                     "transform": "scale(1.02)",
-                                    "box_shadow": "0 4px 12px rgba(34, 197, 94, 0.3)",
+                                    "box_shadow": "0 4px 12px rgba(11, 87, 208, 0.3)",
                                 },
                                 transition="all 0.2s ease",
                             ),
